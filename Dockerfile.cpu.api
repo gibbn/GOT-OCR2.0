@@ -1,0 +1,10 @@
+FROM got-ocr-cpu-base
+
+RUN pip install --no-cache-dir PyMuPDF fastapi gunicorn python-magic python-multipart uvicorn
+
+WORKDIR /app
+COPY app.py .
+
+# no --preload with torch
+# https://github.com/benoitc/gunicorn/issues/2478
+CMD ["gunicorn", "--workers", "1", "--timeout", "180", "--worker-class=uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "app:app"]

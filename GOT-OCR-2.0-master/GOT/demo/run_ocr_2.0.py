@@ -49,11 +49,11 @@ def eval_model(args):
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
 
-    model = GOTQwenForCausalLM.from_pretrained(model_name, low_cpu_mem_usage=True, device_map='cuda', use_safetensors=True, pad_token_id=151643).eval()
+    model = GOTQwenForCausalLM.from_pretrained(model_name, low_cpu_mem_usage=True, device_map=args.device, use_safetensors=True, pad_token_id=151643).eval()
 
     
 
-    model.to(device='cuda',  dtype=torch.bfloat16)
+    model.to(device=args.device,  dtype=torch.bfloat16)
 
 
     # TODO vary old codes, NEED del 
@@ -125,7 +125,7 @@ def eval_model(args):
     image_tensor_1 = image_processor_high(image_1)
 
 
-    input_ids = torch.as_tensor(inputs.input_ids).cuda()
+    input_ids = torch.as_tensor(inputs.input_ids).to(args.device)
 
     stop_str = conv.sep if conv.sep_style != SeparatorStyle.TWO else conv.sep2
     keywords = [stop_str]
@@ -133,10 +133,10 @@ def eval_model(args):
     streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
 
 
-    with torch.autocast("cuda", dtype=torch.bfloat16):
+    with torch.autocast(args.device, dtype=torch.bfloat16):
         output_ids = model.generate(
             input_ids,
-            images=[(image_tensor.unsqueeze(0).half().cuda(), image_tensor_1.unsqueeze(0).half().cuda())],
+            images=[(image_tensor.unsqueeze(0).half().to(args.device), image_tensor_1.unsqueeze(0).half().to(args.device))],
             do_sample=False,
             num_beams = 1,
             no_repeat_ngram_size = 20,
@@ -240,6 +240,7 @@ if __name__ == "__main__":
     parser.add_argument("--box", type=str, default= '')
     parser.add_argument("--color", type=str, default= '')
     parser.add_argument("--render", action='store_true')
+    parser.add_argument("--device", type=str, default='cuda')
     args = parser.parse_args()
 
     eval_model(args)

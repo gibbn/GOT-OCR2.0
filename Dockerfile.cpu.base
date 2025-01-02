@@ -1,0 +1,23 @@
+FROM python:3.10-slim
+
+RUN apt-get update && apt-get install -y \
+    # opencv dependencies
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    unzip \
+    # python magic dependency
+    libmagic1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# download and extract weights first - this is the most expensive and stable layer
+RUN pip install --no-cache-dir gdown
+RUN gdown 1OQrXq_NB_QbJD9yPab6MSj0mcUD4DcrX -O GOT_weights.zip && \
+    unzip GOT_weights.zip && \
+    rm GOT_weights.zip
+
+COPY GOT-OCR-2.0-master /app/GOT-OCR-2.0-master
+WORKDIR /app/GOT-OCR-2.0-master
+RUN pip install --no-cache-dir -e .
+COPY assets /app/assets

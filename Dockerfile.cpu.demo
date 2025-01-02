@@ -1,0 +1,13 @@
+FROM got-ocr-cpu-base
+
+WORKDIR /app
+RUN echo '#!/bin/bash\n\
+python /app/GOT-OCR-2.0-master/GOT/demo/run_ocr_2.0.py \
+--model-name /app/GOT_weights/ \
+--image-file "$1" \
+--type "$2" \
+--device cpu' > /app/run_ocr.sh && \
+chmod +x /app/run_ocr.sh
+
+ENTRYPOINT ["/app/run_ocr.sh"]
+CMD ["/app/assets/wechat.jpg", "ocr"]

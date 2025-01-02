@@ -65,6 +65,7 @@ We encourage everyone to develop GOT applications based on this repo. Thanks for
 - [Train](#train)
 - [Fine-tune](#fine-tune)
 - [Eval](#eval)
+- [Dockerized CPU version](#dockerized-cpu-version)
 
 ***
 <p align="center">
@@ -218,6 +219,39 @@ More details can be seen in [ms-swift](https://github.com/modelscope/ms-swift/is
 3. You can use the evaluate_GOT.py to run the eval. If you have 8 GPUs， the --num-chunks can be set to 8.
  ```Shell
 python3 GOT/eval/evaluate_GOT.py --model-name /GOT_weights/ --gtfile_path xxxx.json --image_path  /image/path/ --out_path /data/eval_results/GOT_mathpix_test/ --num-chunks 8 --datatype OCR
+```
+
+## Dockerized CPU version
+
+The model can be run in a Docker container on CPU. The [Makefile](Makefile) contains two targets for building images: "demo" and "api". The targets share the same base image.
+
+### Demo
+
+The "demo" docker container runs the demo script on one of the images in assets folder, either in OCR or format mode.
+
+```Shell
+make demo
+# runs on /app/assets/wechat.jpg in OCR mode by default
+docker run --rm got-ocr-cpu-demo
+# or pass explicit positional arguments
+docker run --rm got-ocr-cpu-demo /app/assets/got_support.jpg ocr
+```
+
+### API
+
+The "api" docker container runs a minimal FastAPI app that serves the OCR model. The API handles both images and PDFs.
+
+```Shell
+make api
+docker run --rm -p 8000:8000 got-ocr-cpu-api
+```
+
+You can then make requests to the API as follows:
+
+```Shell
+curl -X POST \
+  -F "file=@/path/to/example.pdf" \
+  http://localhost:8000/generate?format=1
 ```
 
 ## Contact
